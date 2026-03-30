@@ -11,7 +11,7 @@ export default function HomePage() {
             Dou-Mar Tax Services Ltd.
           </h1>
           <div className="w-16 h-px bg-white/30 mx-auto my-6" />
-          <p className="text-lg md:text-xl text-white/70 font-light max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-white/90 font-light max-w-2xl mx-auto leading-relaxed">
             Professional personal income tax preparation serving Saskatchewan
             residents since 1989
           </p>
@@ -24,7 +24,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/contact"
-              className="inline-block border border-white/30 text-white px-8 py-3.5 text-base font-medium rounded no-underline hover:bg-white/10 transition-colors"
+              className="inline-block border border-white/60 text-white px-8 py-3.5 text-base font-medium rounded no-underline hover:bg-white/15 transition-colors"
             >
               Contact Us
             </Link>
@@ -100,7 +100,7 @@ export default function HomePage() {
           <h3 className="text-xl md:text-2xl font-light mb-5 tracking-tight">
             {SERVICES.experience.title}
           </h3>
-          <p className="text-white/80 leading-relaxed text-lg font-light">
+          <p className="text-white/90 leading-relaxed text-lg font-light">
             {SERVICES.experience.body}
           </p>
         </div>

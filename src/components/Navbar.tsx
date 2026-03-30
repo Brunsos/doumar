@@ -18,14 +18,14 @@ export default function Navbar() {
           </Link>
 
           {/* Contact info - subtle top right */}
-          <div className="hidden md:flex items-center gap-6 text-sm text-gray-400 font-light">
+          <div className="hidden md:flex items-center gap-6 text-sm text-gray-600 font-light">
             <a
               href="tel:306-205-4185"
               className="no-underline hover:text-navy transition-colors"
             >
               306-205-4185
             </a>
-            <span className="text-gray-200">|</span>
+            <span className="text-gray-400">|</span>
             <a
               href="mailto:info@doumar.ca"
               className="no-underline hover:text-navy transition-colors"
