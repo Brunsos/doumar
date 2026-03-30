@@ -8,10 +8,10 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Brand */}
           <div>
-            <h3 className="text-xl font-medium mb-2 tracking-tight">
+            <h3 className="text-xl font-medium mb-2 tracking-tight text-white">
               Dou-Mar Tax Services Ltd.
             </h3>
-            <p className="text-white/80 text-sm leading-relaxed">
+            <p className="text-gray-300 text-sm leading-relaxed">
               Professional tax preparation services serving Saskatchewan
               residents since 1989.
             </p>
@@ -19,7 +19,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-white/90 mb-4">
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">
               Quick Links
             </h4>
             <ul className="space-y-2">
@@ -27,7 +27,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-white/90 hover:text-white no-underline transition-colors text-[0.9rem]"
+                    className="text-gray-200 hover:text-white no-underline transition-colors text-[0.9rem]"
                   >
                     {link.label}
                   </Link>
@@ -38,14 +38,14 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-white/90 mb-4">
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">
               Contact
             </h4>
-            <ul className="space-y-3 text-white/90 text-[0.9rem]">
+            <ul className="space-y-3 text-gray-200 text-[0.9rem]">
               <li>
                 <a
                   href={`tel:${CONTACT.phone}`}
-                  className="text-white/90 hover:text-white no-underline transition-colors"
+                  className="text-gray-200 hover:text-white no-underline transition-colors"
                 >
                   Tel. {CONTACT.phone}
                 </a>
@@ -53,12 +53,12 @@ export default function Footer() {
               <li>
                 <a
                   href={`mailto:${CONTACT.email}`}
-                  className="text-white/90 hover:text-white no-underline transition-colors"
+                  className="text-gray-200 hover:text-white no-underline transition-colors"
                 >
                   {CONTACT.email}
                 </a>
               </li>
-              <li className="leading-relaxed">
+              <li className="leading-relaxed text-gray-200">
                 {CONTACT.address}
                 <br />
                 {CONTACT.city}, {CONTACT.province}. {CONTACT.postal}
@@ -67,7 +67,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-white/20 mt-10 pt-6 text-center text-white/90 text-sm">
+        <div className="border-t border-gray-600 mt-10 pt-6 text-center text-gray-400 text-sm">
           &copy; {new Date().getFullYear()} Dou-Mar Tax Services Ltd. All rights
           reserved.
         </div>

@@ -24,7 +24,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/contact"
-              className="inline-block border border-white/60 text-white px-8 py-3.5 text-base font-medium rounded no-underline hover:bg-white/15 transition-colors"
+              className="inline-block border-2 border-white text-white px-8 py-3.5 text-base font-medium rounded no-underline hover:bg-white hover:text-navy transition-colors"
             >
               Contact Us
             </Link>
