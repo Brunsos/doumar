@@ -8,6 +8,7 @@ import {
 } from "@/lib/security";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendIntakeEmail } from "@/lib/email";
+import { generateIntakePdf } from "@/lib/pdf";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -34,19 +35,30 @@ export async function POST(request: NextRequest) {
     // Honeypot check
     const honeypot = formData.get("website") as string | null;
     if (checkHoneypot(honeypot)) {
-      // Silently reject bots — return success to not reveal detection
       console.log(`[intake] Honeypot triggered: ${anonIp}`);
       return NextResponse.json({ success: true });
     }
 
-    // Extract and validate fields
-    const rawData = {
-      firstName: formData.get("firstName") as string,
-      lastName: formData.get("lastName") as string,
-      consent: formData.get("consent") === "true",
-    };
+    // Parse and validate form data
+    const rawJson = formData.get("data") as string;
+    if (!rawJson) {
+      return NextResponse.json(
+        { error: "Missing form data." },
+        { status: 400 }
+      );
+    }
 
-    const validation = intakeSchema.safeParse(rawData);
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(rawJson);
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid form data." },
+        { status: 400 }
+      );
+    }
+
+    const validation = intakeSchema.safeParse(parsed);
     if (!validation.success) {
       return NextResponse.json(
         { error: "Invalid form data.", details: validation.error.flatten().fieldErrors },
@@ -54,7 +66,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process files
+    // Process uploaded files
     const files: { filename: string; content: Buffer }[] = [];
     let totalSize = 0;
 
@@ -80,10 +92,9 @@ export async function POST(request: NextRequest) {
       const arrayBuffer = await entry.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      // Magic byte validation
       if (!validateFileMagicBytes(buffer)) {
         return NextResponse.json(
-          { error: `File "${entry.name}" is not an allowed file type. Accepted: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX.` },
+          { error: `File "${entry.name}" is not an allowed file type.` },
           { status: 400 }
         );
       }
@@ -94,17 +105,23 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Send email
+    // Generate filled intake PDF
+    const pdfBuffer = await generateIntakePdf(validation.data);
+
+    // Send email via Resend
     await sendIntakeEmail({
-      firstName: validation.data.firstName,
-      lastName: validation.data.lastName,
+      data: validation.data,
+      pdfBuffer,
       files,
     });
 
     console.log(`[intake] Success: ${anonIp}`);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(`[intake] Error: ${anonIp}`, error instanceof Error ? error.message : "Unknown error");
+    console.error(
+      `[intake] Error: ${anonIp}`,
+      error instanceof Error ? error.message : "Unknown error"
+    );
     return NextResponse.json(
       { error: "An error occurred while processing your submission. Please try again or contact us directly." },
       { status: 500 }

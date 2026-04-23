@@ -20,7 +20,7 @@ body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 300;
+  font-weight: 400;
   letter-spacing: -0.1px;
   line-height: 1.6;
 }
@@ -32,12 +32,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 a {
-  color: var(--color-navy);
   transition: color 0.2s ease;
-}
-
-a:hover {
-  color: var(--color-navy-light);
 }
 
 ::selection {

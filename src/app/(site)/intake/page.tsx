@@ -6,10 +6,10 @@ export default function IntakePage() {
     <>
       <PageHeader
         title="Submit Your Documents"
-        subtitle="Fill in your information and upload your tax documents below. We will contact you to confirm receipt."
+        subtitle="Complete the intake form below with your information. Upload any tax documents you have ready — you can always send more later."
       />
 
-      <div className="max-w-2xl mx-auto px-6 py-14">
+      <div className="max-w-3xl mx-auto px-6 py-14">
         <IntakeForm />
 
         <div className="mt-14 pt-8 border-t border-gray-100 text-center">

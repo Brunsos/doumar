@@ -162,24 +162,6 @@ export const PRIVACY_POLICIES = [
   },
 ];
 
-export const UPDATES = [
-  {
-    date: "January 2, 2026",
-    greeting: "Happy New Year and all the best to you in 2026!",
-    paragraphs: [
-      "2025 has been a very eventful year for Dou-Mar Tax Services Ltd.",
-      "First and foremost, I am writing to inform you that Doug Brown, my valued business partner, retired on June 30, 2025, after 35 years of dedicated service.",
-      "We want to express our sincere gratitude to Doug for his years of commitment and the positive impact he has had on our firm and our clients. I am deeply thankful for his contributions and wish him all the best in retirement.",
-      "I understand that this news may raise questions about the future of Dou-Mar and the services we provided. I am pleased to announce that Dou-Mar will continue to serve your needs as in years past and will provide you with the same high level of service and expertise that you have come to expect from Dou-Mar Tax Services Ltd.",
-      "We have secured new office space located at 177 Sunset Drive, Regina (located inside Harmony United Church) effective January 6, 2026.",
-      "If you have any immediate questions or concerns, please do not hesitate to contact me at (306) 539-6815 or by email at mark@doumar.ca.",
-      "We thank you for your continued business and trust as we move forward into 2026 and future years in this new chapter for Dou-Mar Tax Services Ltd.",
-    ],
-    signoff: "Sincerely,",
-    author: "Mark Green, Owner",
-  },
-];
-
 export const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/prices", label: "Prices" },

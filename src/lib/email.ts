@@ -1,59 +1,130 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { escapeHtml } from "./security";
+import type { IntakeSchemaType } from "./validation";
+
+function formatDate(dateStr: string): string {
+  if (!dateStr) return "—";
+  const [y, m, d] = dateStr.split("-");
+  if (!y || !m || !d) return dateStr;
+  return `${d}/${m}/${y}`;
+}
+
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 interface IntakeEmailData {
-  firstName: string;
-  lastName: string;
+  data: IntakeSchemaType;
+  pdfBuffer: Uint8Array;
   files: { filename: string; content: Buffer }[];
 }
 
-function createTransporter() {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: Number(process.env.SMTP_PORT) === 465,
-    requireTLS: true,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+export async function sendIntakeEmail(input: IntakeEmailData): Promise<void> {
+  const safeFirst = escapeHtml(input.data.client.firstName);
+  const safeLast = escapeHtml(input.data.client.lastName);
+
+  const body = buildEmailBody(input.data);
+
+  const attachments = [
+    {
+      filename: `intake-${safeLast}-${safeFirst}.pdf`,
+      content: Buffer.from(input.pdfBuffer).toString("base64"),
     },
-    tls: {
-      rejectUnauthorized: true,
-    },
+    ...input.files.map((file) => ({
+      filename: file.filename,
+      content: file.content.toString("base64"),
+    })),
+  ];
+
+  const resend = getResend();
+
+  await resend.emails.send({
+    from: process.env.EMAIL_FROM || "Dou-Mar Intake <onboarding@resend.dev>",
+    to: process.env.INTAKE_RECIPIENT!,
+    subject: `New Client Intake: ${safeFirst} ${safeLast}`,
+    text: body,
+    attachments,
   });
 }
 
-export async function sendIntakeEmail(data: IntakeEmailData): Promise<void> {
-  const transporter = createTransporter();
+function buildEmailBody(data: IntakeSchemaType): string {
+  const lines: string[] = [
+    "New Client Intake Submission",
+    "============================",
+    "",
+    "CLIENT INFORMATION",
+    `  Name: ${data.client.firstName} ${data.client.lastName}`,
+    `  Phone: ${data.client.phone || "—"}`,
+    `  Email: ${data.client.email || "—"}`,
+    `  Date of Birth: ${formatDate(data.client.dob)}`,
+    `  Preferred Contact: ${data.client.contactPreference}`,
+    "",
+  ];
 
-  // Verify TLS connection
-  await transporter.verify();
+  const needsSpouse =
+    data.maritalStatus === "Married" || data.maritalStatus === "Common Law Spouse";
 
-  const safeFirst = escapeHtml(data.firstName);
-  const safeLast = escapeHtml(data.lastName);
+  if (needsSpouse && data.spouse) {
+    lines.push(
+      "SPOUSE INFORMATION",
+      `  Name: ${data.spouse.firstName || "—"} ${data.spouse.lastName || "—"}`,
+      `  Phone: ${data.spouse.phone || "—"}`,
+      `  Email: ${data.spouse.email || "—"}`,
+      `  Date of Birth: ${formatDate(data.spouse.dob || "")}`,
+      `  Preferred Contact: ${data.spouse.contactPreference || "—"}`,
+      ""
+    );
+  }
 
-  const body = `
-New Client Intake Submission
-============================
+  lines.push(
+    "ADDRESS",
+    `  ${data.address.street}`,
+    `  ${data.address.city}, ${data.address.province}  ${data.address.postalCode}`,
+    "",
+    "MARITAL STATUS",
+    `  ${data.maritalStatus}`,
+  );
+  if (data.maritalStatusChangeDate) {
+    lines.push(`  Date of change: ${data.maritalStatusChangeDate}`);
+  }
+  lines.push("");
 
-Name: ${safeFirst} ${safeLast}
+  lines.push(`SOLD PROPERTY IN 2025: ${data.soldProperty ? "Yes" : "No"}`);
+  if (data.soldProperty) {
+    lines.push(
+      `  Sale price: ${data.propertySalePrice || "—"}`,
+      `  Original purchase amount: ${data.propertyPurchaseAmount || "—"}`,
+      `  Expenses: ${data.propertyExpenses || "—"}`
+    );
+  }
+  lines.push("");
 
-Number of documents attached: ${data.files.length}
+  lines.push(
+    "ADDITIONAL INFORMATION",
+    `  Canadian citizen: ${data.canadianCitizen ? "Yes" : "No"}`,
+    `  Authorize Elections Canada: ${data.authorizeElectionsCanada ? "Yes" : "No"}`,
+    `  Foreign property > $100,000: ${data.foreignPropertyOver100k ? "Yes" : "No"}`,
+    ""
+  );
 
----
-This is an automated message from the Dou-Mar Tax Services website.
-Files are sent directly and are not stored on any server.
-Attachments have not been scanned for malware. Open only from trusted submissions.
-  `.trim();
+  const children = data.children || [];
+  if (children.length > 0) {
+    lines.push("CHILDREN");
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      lines.push(
+        `  Child ${i + 1}: ${child.firstName} ${child.lastName}, DOB: ${formatDate(child.dob)}, Gender: ${child.gender}`
+      );
+    }
+    lines.push("");
+  }
 
-  await transporter.sendMail({
-    from: process.env.SMTP_USER,
-    to: process.env.INTAKE_RECIPIENT,
-    subject: `New Client Intake: ${safeFirst} ${safeLast}`,
-    text: body,
-    attachments: data.files.map((file) => ({
-      filename: file.filename,
-      content: file.content,
-    })),
-  });
+  lines.push(
+    "---",
+    "This is an automated message from the Dou-Mar Tax Services website.",
+    "A filled intake PDF is attached. Additional uploaded documents may also be attached.",
+    "Attachments have not been scanned for malware. Open only from trusted submissions."
+  );
+
+  return lines.join("\n");
 }

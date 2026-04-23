@@ -7,11 +7,11 @@ export default function HomePage() {
       {/* Hero */}
       <section className="bg-navy text-white py-20 md:py-28 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-light tracking-tight mb-4">
+          <h1 className="text-4xl md:text-5xl font-normal tracking-tight mb-4">
             Dou-Mar Tax Services Ltd.
           </h1>
           <div className="w-16 h-px bg-white/30 mx-auto my-6" />
-          <p className="text-lg md:text-xl text-white/90 font-light max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-[#a8c0d4] font-normal max-w-2xl mx-auto leading-relaxed">
             Professional personal income tax preparation serving Saskatchewan
             residents since 1989
           </p>
@@ -24,7 +24,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/contact"
-              className="inline-block border-2 border-white text-white px-8 py-3.5 text-base font-medium rounded no-underline hover:bg-white hover:text-navy transition-colors"
+              className="inline-block border-2 border-white bg-[#2A3F6B] text-white px-8 py-3.5 text-base font-semibold rounded no-underline hover:bg-white hover:text-navy transition-colors"
             >
               Contact Us
             </Link>
@@ -35,7 +35,7 @@ export default function HomePage() {
       {/* Offers heading */}
       <section className="pt-16 md:pt-20 px-6">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-light text-navy tracking-tight text-center mb-2">
+          <h2 className="text-2xl md:text-3xl font-normal text-navy tracking-tight text-center mb-2">
             Offers
           </h2>
           <div className="w-12 h-px bg-navy/20 mx-auto" />
@@ -45,10 +45,10 @@ export default function HomePage() {
       {/* Computerized Returns */}
       <section className="py-12 md:py-16 px-6">
         <div className="max-w-4xl mx-auto">
-          <h3 className="text-xl md:text-2xl font-light text-navy mb-5 tracking-tight">
+          <h3 className="text-xl md:text-2xl font-normal text-navy mb-5 tracking-tight">
             {SERVICES.computerizedReturns.title}
           </h3>
-          <p className="text-gray-700 leading-relaxed text-lg font-light">
+          <p className="text-gray-700 leading-relaxed text-lg font-normal">
             {SERVICES.computerizedReturns.body}
           </p>
         </div>
@@ -61,10 +61,10 @@ export default function HomePage() {
       {/* Efile Service */}
       <section className="py-12 md:py-16 px-6">
         <div className="max-w-4xl mx-auto">
-          <h3 className="text-xl md:text-2xl font-light text-navy mb-5 tracking-tight">
+          <h3 className="text-xl md:text-2xl font-normal text-navy mb-5 tracking-tight">
             {SERVICES.efileService.title}
           </h3>
-          <p className="text-gray-700 leading-relaxed text-lg font-light">
+          <p className="text-gray-700 leading-relaxed text-lg font-normal">
             {SERVICES.efileService.body}
           </p>
         </div>
@@ -77,14 +77,14 @@ export default function HomePage() {
       {/* Competitive Rates */}
       <section className="py-12 md:py-16 px-6">
         <div className="max-w-4xl mx-auto">
-          <h3 className="text-xl md:text-2xl font-light text-navy mb-5 tracking-tight">
+          <h3 className="text-xl md:text-2xl font-normal text-navy mb-5 tracking-tight">
             {SERVICES.competitiveRates.title}
           </h3>
           <ul className="space-y-3">
             {SERVICES.competitiveRates.bullets.map((bullet) => (
               <li
                 key={bullet}
-                className="text-gray-700 text-lg font-light flex items-start gap-3"
+                className="text-gray-700 text-lg font-normal flex items-start gap-3"
               >
                 <span className="text-navy mt-1.5 text-xs">&#9679;</span>
                 {bullet}
@@ -97,10 +97,10 @@ export default function HomePage() {
       {/* Experience - navy band */}
       <section className="bg-navy text-white py-16 md:py-20 px-6">
         <div className="max-w-4xl mx-auto">
-          <h3 className="text-xl md:text-2xl font-light mb-5 tracking-tight">
+          <h3 className="text-xl md:text-2xl font-normal mb-5 tracking-tight">
             {SERVICES.experience.title}
           </h3>
-          <p className="text-white/90 leading-relaxed text-lg font-light">
+          <p className="text-[#a8c0d4] leading-relaxed text-lg font-normal">
             {SERVICES.experience.body}
           </p>
         </div>
@@ -109,10 +109,10 @@ export default function HomePage() {
       {/* Guaranteed Service */}
       <section className="py-16 md:py-20 px-6">
         <div className="max-w-4xl mx-auto">
-          <h3 className="text-xl md:text-2xl font-light text-navy mb-5 tracking-tight">
+          <h3 className="text-xl md:text-2xl font-normal text-navy mb-5 tracking-tight">
             {SERVICES.guaranteedService.title}
           </h3>
-          <p className="text-gray-700 leading-relaxed text-lg font-light">
+          <p className="text-gray-700 leading-relaxed text-lg font-normal">
             {SERVICES.guaranteedService.body}
           </p>
         </div>
@@ -126,7 +126,7 @@ export default function HomePage() {
           </p>
           <p className="text-gray-600">
             {CONTACT.fullAddress}&nbsp;&nbsp;Tel.{" "}
-            <a href={`tel:${CONTACT.phone}`} className="underline">
+            <a href={`tel:${CONTACT.phone}`} className="underline text-navy hover:text-navy-light">
               {CONTACT.phone}
             </a>
           </p>

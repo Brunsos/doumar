@@ -3,9 +3,17 @@ export interface Service {
   description: string;
 }
 
+import type { PortableTextBlock } from "@portabletext/types";
+
 export interface Update {
+  _id: string;
+  title: string;
   date: string;
-  content: string[];
+  greeting?: string;
+  body: PortableTextBlock[];
+  signoff?: string;
+  author?: string;
+  publishedAt: string;
 }
 
 export interface NavLink {
@@ -13,8 +21,4 @@ export interface NavLink {
   label: string;
 }
 
-export interface IntakeFormData {
-  firstName: string;
-  lastName: string;
-  consent: boolean;
-}
+export type { IntakeSchemaType } from "@/lib/validation";
