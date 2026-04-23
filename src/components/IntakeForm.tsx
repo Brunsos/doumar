@@ -415,7 +415,7 @@ function StepOne({
             />
           </Field>
           <Field
-            label="Preferred Contact Method (select all that apply)"
+            label="Preferred Contact Method"
             error={
               Array.isArray(errors.client?.contactPreference)
                 ? undefined
@@ -495,7 +495,7 @@ function StepOne({
                 )}
               />
             </Field>
-            <Field label="Preferred Contact Method (select all that apply)">
+            <Field label="Preferred Contact Method">
               <Controller
                 control={control}
                 name="spouse.contactPreference"

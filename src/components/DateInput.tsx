@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 const MONTHS = [
   "January",
   "February",
@@ -56,14 +58,19 @@ export default function DateInput({
   const currentYear = new Date().getFullYear();
   const effectiveMax = maxYear ?? currentYear;
 
-  const { year, month, day } = parseValue(value);
+  // Hold partial selections locally. `value` from the form is only a complete
+  // YYYY-MM-DD string or "", so we can't round-trip intermediate state
+  // through it without losing the user's in-progress choices.
+  const [state, setState] = useState(() => parseValue(value));
 
+  const { year, month, day } = state;
   const monthIndex = month ? Number(month) - 1 : -1;
   const maxDay = daysInMonth(monthIndex, Number(year));
-  const clampedDay =
-    day && Number(day) > maxDay ? String(maxDay) : day;
+  const clampedDay = day && Number(day) > maxDay ? String(maxDay) : day;
 
   function emit(nextYear: string, nextMonth: string, nextDay: string) {
+    const next = { year: nextYear, month: nextMonth, day: nextDay };
+    setState(next);
     onChange(buildValue(nextYear, nextMonth, nextDay));
   }
 
