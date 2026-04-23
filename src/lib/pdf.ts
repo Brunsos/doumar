@@ -13,6 +13,13 @@ function formatDate(dateStr: string): string {
   return `${d}/${m}/${y}`;
 }
 
+function formatContactPreference(
+  value: ("Phone" | "Text" | "Email")[] | undefined,
+): string {
+  if (!value || value.length === 0) return "—";
+  return value.join(", ");
+}
+
 export async function generateIntakePdf(
   data: IntakeSchemaType
 ): Promise<Uint8Array> {
@@ -24,7 +31,6 @@ export async function generateIntakePdf(
   const page1 = pdfDoc.addPage([612, 792]); // US Letter
   let y = 750;
   const leftMargin = 50;
-  const rightCol = 320;
   const pageWidth = 612;
 
   // Header
@@ -53,7 +59,7 @@ export async function generateIntakePdf(
     height: 20,
     color: NAVY,
   });
-  page1.drawText("2025 Client Information", {
+  page1.drawText("Client Information", {
     x: leftMargin + 10,
     y: y + 1,
     size: 12,
@@ -69,7 +75,15 @@ export async function generateIntakePdf(
   y = drawLabelValue(page1, "Contact Phone", data.client.phone || "—", leftMargin, y, font, bold);
   y = drawLabelValue(page1, "Contact Email", data.client.email || "—", leftMargin, y, font, bold);
   y = drawLabelValue(page1, "Date of Birth", formatDate(data.client.dob), leftMargin, y, font, bold);
-  y = drawLabelValue(page1, "Contact me by", data.client.contactPreference, leftMargin, y, font, bold);
+  y = drawLabelValue(
+    page1,
+    "Contact me by",
+    formatContactPreference(data.client.contactPreference),
+    leftMargin,
+    y,
+    font,
+    bold,
+  );
 
   // --- Spouse Info ---
   const needsSpouse =
@@ -86,7 +100,7 @@ export async function generateIntakePdf(
     y = drawLabelValue(
       page1,
       "Contact me by",
-      data.spouse.contactPreference || "—",
+      formatContactPreference(data.spouse.contactPreference),
       leftMargin,
       y,
       font,
@@ -124,7 +138,7 @@ export async function generateIntakePdf(
   y -= 8;
   y = drawLabelValue(
     page1,
-    "Sold property in 2025?",
+    "Sold property last year?",
     data.soldProperty ? "Yes" : "No",
     leftMargin,
     y,
@@ -132,6 +146,8 @@ export async function generateIntakePdf(
     bold
   );
   if (data.soldProperty) {
+    y = drawLabelValue(page1, "Date of purchase", formatDate(data.propertyPurchaseDate || ""), leftMargin, y, font, bold);
+    y = drawLabelValue(page1, "Date sold", formatDate(data.propertySaleDate || ""), leftMargin, y, font, bold);
     y = drawLabelValue(page1, "Sale price", data.propertySalePrice || "—", leftMargin, y, font, bold);
     y = drawLabelValue(
       page1,
@@ -157,7 +173,7 @@ export async function generateIntakePdf(
     height: 20,
     color: NAVY,
   });
-  page2.drawText("2025 Client Information (continued)", {
+  page2.drawText("Client Information (continued)", {
     x: leftMargin + 10,
     y: y + 1,
     size: 12,
@@ -217,6 +233,30 @@ export async function generateIntakePdf(
       y = drawLabelValue(page2, "First Name", child.firstName, leftMargin, y, font, bold);
       y = drawLabelValue(page2, "Date of Birth", formatDate(child.dob), leftMargin, y, font, bold);
       y = drawLabelValue(page2, "Gender", child.gender, leftMargin, y, font, bold);
+    }
+  }
+
+  // --- Additional Comments ---
+  if (data.additionalComments && data.additionalComments.trim() !== "") {
+    y -= 8;
+    y = drawSectionHeader(page2, "Additional Comments", leftMargin, y, bold);
+    const contentWidth = pageWidth - leftMargin * 2 - 20;
+    const lines = wrapText(
+      data.additionalComments.trim(),
+      font,
+      10,
+      contentWidth,
+    );
+    for (const line of lines) {
+      if (y < 60) break;
+      page2.drawText(line, {
+        x: leftMargin + 10,
+        y,
+        size: 10,
+        font,
+        color: BLACK,
+      });
+      y -= 14;
     }
   }
 
@@ -285,4 +325,33 @@ function drawLabelValue(
     color: BLACK,
   });
   return y - 16;
+}
+
+function wrapText(
+  text: string,
+  font: Awaited<ReturnType<PDFDocument["embedFont"]>>,
+  size: number,
+  maxWidth: number,
+): string[] {
+  const lines: string[] = [];
+  for (const paragraph of text.split(/\r?\n/)) {
+    if (paragraph === "") {
+      lines.push("");
+      continue;
+    }
+    const words = paragraph.split(/\s+/);
+    let current = "";
+    for (const word of words) {
+      const candidate = current ? current + " " + word : word;
+      const width = font.widthOfTextAtSize(candidate, size);
+      if (width <= maxWidth) {
+        current = candidate;
+      } else {
+        if (current) lines.push(current);
+        current = word;
+      }
+    }
+    if (current) lines.push(current);
+  }
+  return lines;
 }

@@ -14,8 +14,11 @@ import {
 } from "@/lib/validation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import DateInput from "@/components/DateInput";
 
 const STEPS = ["Your Information", "Additional Details", "Documents & Submit"] as const;
+
+const CONTACT_METHODS = ["Phone", "Text", "Email"] as const;
 
 // Top-level fields to validate per step
 const STEP_FIELDS: Record<number, (keyof IntakeSchemaType)[]> = {
@@ -29,6 +32,8 @@ const STEP_FIELDS: Record<number, (keyof IntakeSchemaType)[]> = {
     "propertySalePrice",
     "propertyPurchaseAmount",
     "propertyExpenses",
+    "propertyPurchaseDate",
+    "propertySaleDate",
   ],
   1: [
     "canadianCitizen",
@@ -36,7 +41,7 @@ const STEP_FIELDS: Record<number, (keyof IntakeSchemaType)[]> = {
     "foreignPropertyOver100k",
     "children",
   ],
-  2: ["consent"],
+  2: ["consent", "additionalComments"],
 };
 
 export default function IntakeForm() {
@@ -66,7 +71,7 @@ export default function IntakeForm() {
         phone: "",
         email: "",
         dob: "",
-        contactPreference: "Phone",
+        contactPreference: ["Phone"],
       },
       spouse: {
         lastName: "",
@@ -74,7 +79,7 @@ export default function IntakeForm() {
         phone: "",
         email: "",
         dob: "",
-        contactPreference: "Phone",
+        contactPreference: [],
       },
       address: {
         street: "",
@@ -88,10 +93,13 @@ export default function IntakeForm() {
       propertySalePrice: "",
       propertyPurchaseAmount: "",
       propertyExpenses: "",
+      propertyPurchaseDate: "",
+      propertySaleDate: "",
       canadianCitizen: true,
       authorizeElectionsCanada: false,
       foreignPropertyOver100k: false,
       children: [],
+      additionalComments: "",
       consent: false as unknown as true,
     },
   });
@@ -244,7 +252,7 @@ export default function IntakeForm() {
                     : "bg-gray-200 text-gray-500"
                 }`}
               >
-                {i < step ? "\u2713" : i + 1}
+                {i < step ? "✓" : i + 1}
               </div>
               <span
                 className={`text-xs mt-1 text-center ${
@@ -393,22 +401,37 @@ function StepOne({
             <input {...register("client.email")} type="email" className={inputClass(errors.client?.email)} />
           </Field>
           <Field label="Date of Birth" error={errors.client?.dob?.message}>
-            <input {...register("client.dob")} type="date" className={inputClass(errors.client?.dob)} />
+            <Controller
+              control={control}
+              name="client.dob"
+              render={({ field }) => (
+                <DateInput
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  error={!!errors.client?.dob}
+                />
+              )}
+            />
           </Field>
-          <Field label="Preferred Contact Method">
-            <div className="flex gap-4 pt-2">
-              {(["Phone", "Text", "Email"] as const).map((opt) => (
-                <label key={opt} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    value={opt}
-                    {...register("client.contactPreference")}
-                    className="w-4 h-4 accent-navy"
-                  />
-                  <span className="text-sm">{opt}</span>
-                </label>
-              ))}
-            </div>
+          <Field
+            label="Preferred Contact Method (select all that apply)"
+            error={
+              Array.isArray(errors.client?.contactPreference)
+                ? undefined
+                : errors.client?.contactPreference?.message
+            }
+          >
+            <Controller
+              control={control}
+              name="client.contactPreference"
+              render={({ field }) => (
+                <ContactCheckboxGroup
+                  value={field.value || []}
+                  onChange={field.onChange}
+                />
+              )}
+            />
           </Field>
         </div>
       </fieldset>
@@ -425,10 +448,17 @@ function StepOne({
             </select>
           </Field>
           <Field label="Date of change (if different from previous year)">
-            <input
-              {...register("maritalStatusChangeDate")}
-              type="date"
-              className={inputClass()}
+            <Controller
+              control={control}
+              name="maritalStatusChangeDate"
+              render={({ field }) => (
+                <DateInput
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  minYear={1970}
+                />
+              )}
             />
           </Field>
         </div>
@@ -452,22 +482,30 @@ function StepOne({
               <input {...register("spouse.email")} type="email" className={inputClass(errors.spouse?.email)} />
             </Field>
             <Field label="Date of Birth" error={errors.spouse?.dob?.message}>
-              <input {...register("spouse.dob")} type="date" className={inputClass(errors.spouse?.dob)} />
+              <Controller
+                control={control}
+                name="spouse.dob"
+                render={({ field }) => (
+                  <DateInput
+                    value={field.value || ""}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    error={!!errors.spouse?.dob}
+                  />
+                )}
+              />
             </Field>
-            <Field label="Preferred Contact Method">
-              <div className="flex gap-4 pt-2">
-                {(["Phone", "Text", "Email"] as const).map((opt) => (
-                  <label key={opt} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      value={opt}
-                      {...register("spouse.contactPreference")}
-                      className="w-4 h-4 accent-navy"
-                    />
-                    <span className="text-sm">{opt}</span>
-                  </label>
-                ))}
-              </div>
+            <Field label="Preferred Contact Method (select all that apply)">
+              <Controller
+                control={control}
+                name="spouse.contactPreference"
+                render={({ field }) => (
+                  <ContactCheckboxGroup
+                    value={field.value || []}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
             </Field>
           </div>
         </fieldset>
@@ -502,23 +540,57 @@ function StepOne({
       <fieldset>
         <legend className="text-xl font-semibold text-navy mb-4">Property</legend>
         <BooleanRadioField
-          label="Have you sold property in 2025?"
+          label="Have you sold property last year?"
           name="soldProperty"
           control={control}
           setValue={setValue}
         />
 
         {soldProperty && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-            <Field label="Sale Price" error={errors.propertySalePrice?.message}>
-              <input {...register("propertySalePrice")} placeholder="$" className={inputClass(errors.propertySalePrice)} />
-            </Field>
-            <Field label="Original Purchase Amount" error={errors.propertyPurchaseAmount?.message}>
-              <input {...register("propertyPurchaseAmount")} placeholder="$" className={inputClass(errors.propertyPurchaseAmount)} />
-            </Field>
-            <Field label="Expenses" error={errors.propertyExpenses?.message}>
-              <input {...register("propertyExpenses")} placeholder="$" className={inputClass(errors.propertyExpenses)} />
-            </Field>
+          <div className="space-y-4 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Field label="Sale Price" error={errors.propertySalePrice?.message}>
+                <input {...register("propertySalePrice")} placeholder="$" className={inputClass(errors.propertySalePrice)} />
+              </Field>
+              <Field label="Original Purchase Amount" error={errors.propertyPurchaseAmount?.message}>
+                <input {...register("propertyPurchaseAmount")} placeholder="$" className={inputClass(errors.propertyPurchaseAmount)} />
+              </Field>
+              <Field label="Expenses" error={errors.propertyExpenses?.message}>
+                <input {...register("propertyExpenses")} placeholder="$" className={inputClass(errors.propertyExpenses)} />
+              </Field>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Date of Purchase" error={errors.propertyPurchaseDate?.message}>
+                <Controller
+                  control={control}
+                  name="propertyPurchaseDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      error={!!errors.propertyPurchaseDate}
+                      minYear={1950}
+                    />
+                  )}
+                />
+              </Field>
+              <Field label="Date Sold" error={errors.propertySaleDate?.message}>
+                <Controller
+                  control={control}
+                  name="propertySaleDate"
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      error={!!errors.propertySaleDate}
+                      minYear={1950}
+                    />
+                  )}
+                />
+              </Field>
+            </div>
           </div>
         )}
       </fieldset>
@@ -595,7 +667,18 @@ function StepTwo({
                 <input {...register(`children.${index}.firstName`)} className={inputClass(errors.children?.[index]?.firstName)} />
               </Field>
               <Field label="Date of Birth" error={errors.children?.[index]?.dob?.message}>
-                <input {...register(`children.${index}.dob`)} type="date" className={inputClass(errors.children?.[index]?.dob)} />
+                <Controller
+                  control={control}
+                  name={`children.${index}.dob`}
+                  render={({ field }) => (
+                    <DateInput
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      error={!!errors.children?.[index]?.dob}
+                    />
+                  )}
+                />
               </Field>
               <Field label="Gender" error={errors.children?.[index]?.gender?.message}>
                 <div className="flex gap-4 pt-2">
@@ -632,7 +715,7 @@ function StepTwo({
 }
 
 // =============================================================================
-// Step 3: File Upload, Consent, Submit
+// Step 3: File Upload, Additional Comments, Consent, Submit
 // =============================================================================
 
 function StepThree({
@@ -715,6 +798,31 @@ function StepThree({
         )}
       </div>
 
+      {/* Additional Comments */}
+      <div>
+        <label
+          htmlFor="additionalComments"
+          className="block text-xl font-semibold text-navy mb-2"
+        >
+          Additional Comments
+        </label>
+        <p className="text-gray-600 mb-3 text-sm">
+          Anything else you&rsquo;d like us to know? Optional.
+        </p>
+        <textarea
+          id="additionalComments"
+          {...register("additionalComments")}
+          rows={5}
+          maxLength={2000}
+          className={inputClass(errors.additionalComments)}
+        />
+        {errors.additionalComments && (
+          <p className="text-red-600 mt-1 text-sm" role="alert">
+            {errors.additionalComments.message}
+          </p>
+        )}
+      </div>
+
       {/* Consent */}
       <div className="border border-gray-200 rounded p-4 bg-gray-50">
         <label className="flex items-start gap-3 cursor-pointer">
@@ -789,6 +897,38 @@ function Field({
       {error && (
         <p className="text-red-600 text-sm mt-1" role="alert">{error}</p>
       )}
+    </div>
+  );
+}
+
+function ContactCheckboxGroup({
+  value,
+  onChange,
+}: {
+  value: ("Phone" | "Text" | "Email")[];
+  onChange: (value: ("Phone" | "Text" | "Email")[]) => void;
+}) {
+  function toggle(option: "Phone" | "Text" | "Email") {
+    if (value.includes(option)) {
+      onChange(value.filter((v) => v !== option));
+    } else {
+      onChange([...value, option]);
+    }
+  }
+
+  return (
+    <div className="flex gap-4 pt-2 flex-wrap">
+      {CONTACT_METHODS.map((opt) => (
+        <label key={opt} className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={value.includes(opt)}
+            onChange={() => toggle(opt)}
+            className="w-4 h-4 accent-navy"
+          />
+          <span className="text-sm">{opt}</span>
+        </label>
+      ))}
     </div>
   );
 }

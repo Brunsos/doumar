@@ -38,7 +38,13 @@ const optionalDobField = z
   .optional()
   .or(z.literal(""));
 
-const contactPreference = z.enum(["Phone", "Text", "Email"]);
+const contactMethod = z.enum(["Phone", "Text", "Email"]);
+
+const contactPreference = z
+  .array(contactMethod)
+  .min(1, "Select at least one preferred contact method");
+
+const optionalContactPreference = z.array(contactMethod).optional();
 
 const maritalStatusOptions = [
   "Single",
@@ -70,7 +76,7 @@ const spouseSchema = z.object({
   phone: phoneField,
   email: emailField,
   dob: optionalDobField,
-  contactPreference: contactPreference.optional(),
+  contactPreference: optionalContactPreference,
 });
 
 const addressSchema = z.object({
@@ -106,6 +112,9 @@ export const intakeSchema = z
     propertySalePrice: z.string().optional().or(z.literal("")),
     propertyPurchaseAmount: z.string().optional().or(z.literal("")),
     propertyExpenses: z.string().optional().or(z.literal("")),
+    propertyPurchaseDate: z.string().optional().or(z.literal("")),
+    propertySaleDate: z.string().optional().or(z.literal("")),
+    additionalComments: z.string().max(2000, "Too long").optional().or(z.literal("")),
     canadianCitizen: z.boolean(),
     authorizeElectionsCanada: z.boolean(),
     foreignPropertyOver100k: z.boolean(),
@@ -148,6 +157,26 @@ export const intakeSchema = z
           code: z.ZodIssueCode.custom,
           message: "Original purchase amount is required",
           path: ["propertyPurchaseAmount"],
+        });
+      }
+      if (
+        !data.propertyPurchaseDate ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(data.propertyPurchaseDate)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Purchase date is required",
+          path: ["propertyPurchaseDate"],
+        });
+      }
+      if (
+        !data.propertySaleDate ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(data.propertySaleDate)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Sale date is required",
+          path: ["propertySaleDate"],
         });
       }
     }
